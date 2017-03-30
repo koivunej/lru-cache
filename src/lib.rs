@@ -243,6 +243,30 @@ impl<K: Eq + Hash, V, S: BuildHasher> LruCache<K, V, S> {
         self.map.pop_front()
     }
 
+    /// Marks the given key as least recently used so that it will be the next key removed if
+    /// capacity limitations are met during `insert`.
+    ///
+    /// Returns `true` if the key exists and is now the least recently used, `false` otherwise.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use lru_cache::LruCache;
+    ///
+    /// let mut cache = LruCache::new(2);
+    ///
+    /// cache.insert(1, "a");
+    /// cache.insert(2, "b");
+    /// assert!(cache.mark_lru(&2));
+    ///
+    /// assert_eq!(cache.remove_lru(), Some((2, "b")));
+    /// assert_eq!(cache.len(), 1);
+    /// ```
+    #[inline]
+    pub fn mark_lru<Q: ?Sized>(&mut self, key: &Q) -> bool where K: Borrow<Q>, Q: Eq + Hash {
+        self.map.mark_lru(key)
+    }
+
     /// Returns the number of key-value pairs in the cache.
     pub fn len(&self) -> usize { self.map.len() }
 
